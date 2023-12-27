@@ -3,17 +3,34 @@ LABEL authors="sergio"
 
 ENTRYPOINT ["top", "-b"]
 
-# Usamos una imagen base con Java y SBT instalados
-FROM adoptopenjdk:11-jre-hotspot
+FROM openjdk:8u151
 
-# Directorio de trabajo dentro del contenedor
-WORKDIR /app
+# Env variables
+ENV SCALA_VERSION 2.12.4
+ENV SBT_VERSION 1.1.1
 
-# Copiamos los archivos necesarios al contenedor
-COPY . .
+# Scala expects this file
+RUN touch /usr/lib/jvm/java-8-openjdk-amd64/release
 
-# Compilamos el proyecto (puedes ajustar los comandos según tu proyecto)
-RUN sbt compile
+# Install Scala
+# Piping curl directly in tar
+RUN \
+  curl -fsL https://downloads.typesafe.com/scala/$SCALA_VERSION/scala-$SCALA_VERSION.tgz | tar xfz - -C /root/ && \
+  echo >> /root/.bashrc && \
+  echo "export PATH=~/scala-$SCALA_VERSION/bin:$PATH" >> /root/.bashrc
 
-# Comando para ejecutar la aplicación
-CMD ["sbt", "run"]
+# Mk app dir
+RUN mkdir /alor
+
+# Define working directory
+WORKDIR /alor
+
+# Add target packaged app
+COPY target/universal/stage/ /alor/
+
+# Expose ports
+EXPOSE 800
+EXPOSE 5150
+
+# Launch the app
+CMD ./bin/alor
