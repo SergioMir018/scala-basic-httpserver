@@ -1,0 +1,28 @@
+name: Scala Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Configure Java 17
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+
+      - name: Run sbt clean
+        run: sbt clean
+
+      - name: Run sbt compile
+        run: sbt compile
+
+      - name: Run sbt stage
+        run: sbt stage
