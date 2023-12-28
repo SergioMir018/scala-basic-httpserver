@@ -1,36 +1,25 @@
 FROM ubuntu:latest
 LABEL authors="sergio"
 
-ENTRYPOINT ["top", "-b"]
+FROM openjdk:17-alpine
 
-FROM openjdk:8u151
-
-# Env variables
+# Instalación de Scala
 ENV SCALA_VERSION 2.12.4
-ENV SBT_VERSION 1.1.1
+RUN apk add --no-cache bash
+RUN apk --no-cache add curl
+RUN mkdir /usr/local/scala
+RUN curl -fsL https://downloads.typesafe.com/scala/$SCALA_VERSION/scala-$SCALA_VERSION.tgz | tar xfz - -C /usr/local/scala/
+ENV PATH="/usr/local/scala/scala-$SCALA_VERSION/bin:${PATH}"
 
-# Scala expects this file
-RUN touch /usr/lib/jvm/java-8-openjdk-amd64/release
+# Configuración del directorio de trabajo
+WORKDIR /akka
 
-# Install Scala
-# Piping curl directly in tar
-RUN \
-  curl -fsL https://downloads.typesafe.com/scala/$SCALA_VERSION/scala-$SCALA_VERSION.tgz | tar xfz - -C /root/ && \
-  echo >> /root/.bashrc && \
-  echo "export PATH=~/scala-$SCALA_VERSION/bin:$PATH" >> /root/.bashrc
+# Copiar archivos necesarios al contenedor
+COPY target/universal/stage/ /akka/
 
-# Mk app dir
-RUN mkdir /alor
+# Exponer puertos
+EXPOSE 8080
 
-# Define working directory
-WORKDIR /alor
+# Comando de inicio
+CMD ["/akka/bin/akkahttp"]
 
-# Add target packaged app
-COPY target/universal/stage/ /alor/
-
-# Expose ports
-EXPOSE 800
-EXPOSE 5150
-
-# Launch the app
-CMD ./bin/alor
