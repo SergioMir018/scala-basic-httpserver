@@ -15,7 +15,7 @@ ENV PATH="/usr/local/scala/scala-$SCALA_VERSION/bin:${PATH}"
 WORKDIR /akka
 
 # Copiar archivos necesarios al contenedor
-COPY target/universal/stage/ /akka/
+COPY ./target/universal/stage/ /akka/
 
 # Exponer puertos
 EXPOSE 8080
